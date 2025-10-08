@@ -1,0 +1,809 @@
+from flask import Flask, render_template_string, request, jsonify
+from datetime import datetime, timedelta
+import json
+import random
+import time
+
+app = Flask(__name__)
+
+# 🎯 نظام التسويق الذكي المتكامل
+class النظام_التسويقي_الذكي:
+    def __init__(self):
+        self.الحملات = []
+        self.المنشورات = []
+        self.التحليلات = {}
+        self.الجمهور = {}
+        self.المنافسون = []
+        
+    def إنشاء_حملة(self, اسم, منصة, ميزانية, جمهور, محتوى, صورة=None):
+        حملة = {
+            'id': len(self.الحملات) + 1,
+            'الاسم': اسم,
+            'المنصة': منصة,
+            'الميزانية': ميزانية,
+            'الجمهور': جمهور,
+            'المحتوى': محتوى,
+            'الصورة': صورة,
+            'الحالة': 'نشط',
+            'تاريخ_البدء': datetime.now(),
+            'تاريخ_الانتهاء': datetime.now() + timedelta(days=7),
+            'الأداء': {
+                'الوصول': 0,
+                'التفاعل': 0,
+                'التحويلات': 0,
+                'التكلفة_لكل_نقرة': 0
+            }
+        }
+        self.الحملات.append(حملة)
+        return حملة
+    
+    def جدولة_منشور(self, منصة, محتوى, توقيت, صورة=None, هاشتاقات=[]):
+        منشور = {
+            'id': len(self.المنشورات) + 1,
+            'المنصة': منصة,
+            'المحتوى': محتوى,
+            'التوقيت': توقيت,
+            'الصورة': صورة,
+            'الهاشتاقات': هاشتاقات,
+            'الحالة': 'مجدول',
+            'تاريخ_النشر': توقيت
+        }
+        self.المنشورات.append(منشور)
+        return منشور
+    
+    def تحليل_الأداء(self, حملة_id):
+        حملة = next((ح for ح in self.الحملات if ح['id'] == حملة_id), None)
+        if حملة:
+            # محاكاة بيانات أداء حقيقية
+            حملة['الأداء'] = {
+                'الوصول': random.randint(1000, 50000),
+                'التفاعل': random.randint(50, 2000),
+                'التحويلات': random.randint(5, 200),
+                'التكلفة_لكل_نقرة': round(random.uniform(0.1, 2.0), 2),
+                'معدل_التحويل': round(random.uniform(1, 15), 2)
+            }
+            return حملة['الأداء']
+        return None
+    
+    def تحليل_الجمهور(self):
+        فئات_عمرية = ['18-24', '25-34', '35-44', '45+']
+        مناطق = ['الرياض', 'جدة', 'الدمام', 'مكة', 'أبها']
+        اهتمامات = ['موضة', 'رياضة', 'تكنولوجيا', 'سفر', 'طعام']
+        
+        self.الجمهور = {
+            'الفئات_العمرية': {فئة: random.randint(100, 1000) for فئة in فئات_عمرية},
+            'المناطق': {منطقة: random.randint(50, 500) for منطقة in مناطق},
+            'الاهتمامات': {اهتمام: random.randint(200, 1500) for اهتمام in اهتمامات},
+            'النمو': random.randint(5, 25)
+        }
+        return self.الجمهور
+    
+    def مراقبة_المنافسين(self, حسابات):
+        for حساب in حسابات:
+            منافس = {
+                'الحساب': حساب,
+                'المتابعون': random.randint(1000, 100000),
+                'معدل_النمو': random.randint(1, 20),
+                'معدل_التفاعل': round(random.uniform(1, 10), 2),
+                'آخر_منشور': datetime.now() - timedelta(hours=random.randint(1, 24))
+            }
+            self.المنافسون.append(منافس)
+        return self.المنافسون
+    
+    def توليد_محتوى(self, فئة):
+        قوالب = {
+            'ترويجي': [
+                "🔥 عرض حصري لمتابعينا فقط!",
+                "🎯 جودة لا تقارن بأسعار لا تُصدق!",
+                "🚀 احصل على منتجك المفضل الآن!"
+            ],
+            'توعوي': [
+                "💡 نصائح لاختيار أفضل الملابس",
+                "🎨 كيف تنسق ألوان ملابسك؟",
+                "👕 دليل العناية بالملابس"
+            ],
+            'تفاعلي': [
+                "🤔 أي منتج تفضل؟ علق بالرقم!",
+                "📸 شاركنا صورك مع منتجاتنا",
+                "🎁 مسابقة: اذكر أفضل ميزة في منتجاتنا"
+            ]
+        }
+        return random.choice(قوالب.get(فئة, قوالب['ترويجي']))
+    
+    def اقتراح_هاشتاقات(self, فئة):
+        هاشتاقات = {
+            'ملابس': ['#موضة', '#أزياء', '#ستايل', '#ملابس', '#مود'],
+            'رياضة': ['#رياضة', '#رياضيين', '#لياقة', '#تدريب', '#رياضة_يومية'],
+            'عروض': ['#عرض', '#خصم', '#تخفيضات', '#عروض', '#سعر_مميز']
+        }
+        return هاشتاقات.get(فئة, ['#تسوق', '#متابعة', '#جديد'])
+
+# 🧠 المساعد الذكي للتسويق
+class المساعد_التسويقي:
+    def __init__(self):
+        self.التوصيات = []
+        self.التنبيهات = []
+    
+    def توليد_توصية(self):
+        توصيات = [
+            "🎯 ركز على الفئة العمرية 18-24 فهي الأكثر تفاعلاً",
+            "📱 انشر في المساء بين 7-10 للحصول على أكبر تفاعل",
+            "💡 استخدم الهاشتاقات التالية: #موضة_شباب #أزياء",
+            "🚀 زد ميزانية الحملات في عطلة نهاية الأسبوع",
+            "👥 تعاون مع مؤثرين محليين لزيادة الوصول"
+        ]
+        return random.choice(توصيات)
+    
+    def إنشاء_تنبيه(self, نوع, رسالة):
+        تنبيه = {
+            'النوع': نوع,
+            'الرسالة': رسالة,
+            'الوقت': datetime.now(),
+            'مقروء': False
+        }
+        self.التنبيهات.append(تنبيه)
+        return تنبيه
+
+# إنشاء الأنظمة
+النظام_التسويقي = النظام_التسويقي_الذكي()
+المساعد = المساعد_التسويقي()
+
+HTML = '''
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 النظام التسويقي الذكي - فيسبوك & إنستغرام</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --facebook: #1877f2;
+            --instagram: #e4405f;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f8fafc;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .header h1 {
+            background: linear-gradient(135deg, var(--facebook), var(--instagram));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        
+        .platform-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .platform-tab {
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .platform-tab.facebook {
+            background: var(--facebook);
+            color: white;
+        }
+        
+        .platform-tab.instagram {
+            background: var(--instagram);
+            color: white;
+        }
+        
+        .platform-tab.active {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        
+        .facebook-icon { color: var(--facebook); }
+        .instagram-icon { color: var(--instagram); }
+        
+        .stat-number {
+            font-size: 2.2em;
+            font-weight: 800;
+            color: var(--dark);
+            margin: 10px 0;
+        }
+        
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .module-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .module-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+        
+        .module-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .module-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--facebook), var(--instagram));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+        }
+        
+        .module-icon i {
+            font-size: 1.8em;
+            color: white;
+        }
+        
+        .module-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--facebook);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--facebook), var(--instagram));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(24, 119, 242, 0.3);
+        }
+        
+        .campaigns-list, .posts-list {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .campaign-item, .post-item {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border-right: 4px solid var(--facebook);
+        }
+        
+        .ai-assistant {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .recommendation {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-right: 4px solid var(--instagram);
+        }
+        
+        .live-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.2em; }
+            .modules-grid { grid-template-columns: 1fr; }
+            .platform-tabs { flex-direction: column; }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- الهيدر الرئيسي -->
+        <div class="header">
+            <h1><i class="fas fa-rocket floating"></i> النظام التسويقي الذكي</h1>
+            <p>منصة متكاملة لإدارة التسويق على فيسبوك وإنستغرام</p>
+            
+            <div class="platform-tabs">
+                <div class="platform-tab facebook active">
+                    <i class="fab fa-facebook"></i> فيسبوك
+                </div>
+                <div class="platform-tab instagram">
+                    <i class="fab fa-instagram"></i> إنستغرام
+                </div>
+            </div>
+        </div>
+
+        <!-- لوحة الإحصائيات -->
+        <div class="dashboard">
+            <div class="stat-card">
+                <i class="fas fa-eye stat-icon facebook-icon"></i>
+                <div class="stat-number" id="totalReach">0</div>
+                <div class="stat-label">إجمالي الوصول</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-heart stat-icon instagram-icon"></i>
+                <div class="stat-number" id="totalEngagement">0</div>
+                <div class="stat-label">إجمالي التفاعل</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-exchange-alt stat-icon"></i>
+                <div class="stat-number" id="conversionRate">0%</div>
+                <div class="stat-label">معدل التحويل</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-dollar-sign stat-icon"></i>
+                <div class="stat-number" id="roi">0%</div>
+                <div class="stat-label">عائد الاستثمار</div>
+            </div>
+        </div>
+
+        <!-- وحدات النظام -->
+        <div class="modules-grid">
+            <!-- إنشاء حملة إعلانية -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <div class="module-title">إنشاء حملة إعلانية</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>اسم الحملة</label>
+                    <input type="text" id="campaignName" placeholder="مثال: حملة الملابس الصيفية">
+                </div>
+                
+                <div class="form-group">
+                    <label>المنصة</label>
+                    <select id="campaignPlatform">
+                        <option value="facebook">فيسبوك</option>
+                        <option value="instagram">إنستغرام</option>
+                        <option value="both">المنصتان معاً</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>الميزانية (ريال)</label>
+                    <input type="number" id="campaignBudget" placeholder="500">
+                </div>
+                
+                <div class="form-group">
+                    <label>الجمهور المستهدف</label>
+                    <select id="campaignAudience">
+                        <option value="شباب">شباب 18-25</option>
+                        <option value="شابات">شابات 18-25</option>
+                        <option value="جميع_الفئات">جميع الفئات</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>نص الإعلان</label>
+                    <textarea id="campaignContent" rows="3" placeholder="اكتب محتوى الإعلان..."></textarea>
+                </div>
+                
+                <button class="btn" onclick="createCampaign()">
+                    <i class="fas fa-plus"></i> إنشاء الحملة
+                </button>
+            </div>
+
+            <!-- جدولة المنشورات -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="module-title">جدولة المنشورات</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>المنصة</label>
+                    <select id="postPlatform">
+                        <option value="facebook">فيسبوك</option>
+                        <option value="instagram">إنستغرام</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>نص المنشور</label>
+                    <textarea id="postContent" rows="3" placeholder="اكتب محتوى المنشور..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>وقت النشر</label>
+                    <input type="datetime-local" id="postTime">
+                </div>
+                
+                <div class="form-group">
+                    <label>الهاشتاقات</label>
+                    <input type="text" id="postHashtags" placeholder="#موضة #أزياء #ملابس">
+                </div>
+                
+                <button class="btn" onclick="schedulePost()">
+                    <i class="fas fa-clock"></i> جدولة المنشور
+                </button>
+            </div>
+        </div>
+
+        <!-- الحملات النشطة -->
+        <div class="campaigns-list">
+            <h2><i class="fas fa-bullhorn"></i> الحملات النشطة</h2>
+            <div id="campaignsContainer">
+                <!-- الحملات ستظهر هنا -->
+            </div>
+        </div>
+
+        <!-- المنشورات المجدولة -->
+        <div class="posts-list">
+            <h2><i class="fas fa-calendar-alt"></i> المنشورات المجدولة</h2>
+            <div id="postsContainer">
+                <!-- المنشورات ستظهر هنا -->
+            </div>
+        </div>
+
+        <!-- المساعد الذكي -->
+        <div class="ai-assistant">
+            <h2><i class="fas fa-robot floating"></i> المساعد التسويقي الذكي</h2>
+            
+            <div class="recommendation">
+                <h3>💡 التوصية الذكية</h3>
+                <p id="aiRecommendation">اضغط على الزر للحصول على توصية تسويقية ذكية</p>
+            </div>
+            
+            <button class="btn" onclick="getRecommendation()">
+                <i class="fas fa-magic"></i> توليد توصية جديدة
+            </button>
+            
+            <div class="live-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="liveReach">0</div>
+                    <div class="stat-label">وصول مباشر</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="liveEngagement">0</div>
+                    <div class="stat-label">تفاعل حي</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // إنشاء حملة إعلانية
+        function createCampaign() {
+            const campaignData = {
+                name: document.getElementById('campaignName').value,
+                platform: document.getElementById('campaignPlatform').value,
+                budget: document.getElementById('campaignBudget').value,
+                audience: document.getElementById('campaignAudience').value,
+                content: document.getElementById('campaignContent').value
+            };
+
+            fetch('/api/create_campaign', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(campaignData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert('✅ تم إنشاء الحملة بنجاح!');
+                loadCampaigns();
+                // مسح الحقول
+                document.getElementById('campaignName').value = '';
+                document.getElementById('campaignBudget').value = '';
+                document.getElementById('campaignContent').value = '';
+            });
+        }
+
+        // جدولة منشور
+        function schedulePost() {
+            const postData = {
+                platform: document.getElementById('postPlatform').value,
+                content: document.getElementById('postContent').value,
+                time: document.getElementById('postTime').value,
+                hashtags: document.getElementById('postHashtags').value
+            };
+
+            fetch('/api/schedule_post', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(postData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert('✅ تم جدولة المنشور بنجاح!');
+                loadPosts();
+                // مسح الحقول
+                document.getElementById('postContent').value = '';
+                document.getElementById('postHashtags').value = '';
+            });
+        }
+
+        // تحميل الحملات
+        function loadCampaigns() {
+            fetch('/api/campaigns')
+                .then(response => response.json())
+                .then(campaigns => {
+                    const container = document.getElementById('campaignsContainer');
+                    container.innerHTML = '';
+                    
+                    campaigns.forEach(campaign => {
+                        const campaignElement = document.createElement('div');
+                        campaignElement.className = 'campaign-item';
+                        campaignElement.innerHTML = `
+                            <h3>${campaign.الاسم}</h3>
+                            <p><strong>المنصة:</strong> ${campaign.المنصة}</p>
+                            <p><strong>الميزانية:</strong> ${campaign.الميزانية} ريال</p>
+                            <p><strong>الحالة:</strong> <span style="color: green;">${campaign.الحالة}</span></p>
+                            <button class="btn" onclick="analyzeCampaign(${campaign.id})" style="margin-top: 10px; padding: 8px 15px;">
+                                <i class="fas fa-chart-bar"></i> تحليل الأداء
+                            </button>
+                        `;
+                        container.appendChild(campaignElement);
+                    });
+                });
+        }
+
+        // تحميل المنشورات
+        function loadPosts() {
+            fetch('/api/posts')
+                .then(response => response.json())
+                .then(posts => {
+                    const container = document.getElementById('postsContainer');
+                    container.innerHTML = '';
+                    
+                    posts.forEach(post => {
+                        const postElement = document.createElement('div');
+                        postElement.className = 'post-item';
+                        postElement.innerHTML = `
+                            <p><strong>${post.المحتوى}</strong></p>
+                            <p><strong>المنصة:</strong> ${post.المنصة}</p>
+                            <p><strong>موعد النشر:</strong> ${post.التوقيت}</p>
+                            <p><strong>الحالة:</strong> <span style="color: orange;">${post.الحالة}</span></p>
+                        `;
+                        container.appendChild(postElement);
+                    });
+                });
+        }
+
+        // الحصول على توصية
+        function getRecommendation() {
+            fetch('/api/recommendation')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('aiRecommendation').innerHTML = 
+                        `<strong>🎯 ${data.توصية}</strong>`;
+                });
+        }
+
+        // تحليل حملة
+        function analyzeCampaign(campaignId) {
+            fetch(`/api/analyze_campaign/${campaignId}`)
+                .then(response => response.json())
+                .then(analysis => {
+                    alert(`📊 تحليل الحملة:
+الوصول: ${analysis.الوصول} 
+التفاعل: ${analysis.التفاعل}
+التحويلات: ${analysis.التحويلات}
+التكلفة لكل نقرة: ${analysis.التكلفة_لكل_نقرة} ريال`);
+                });
+        }
+
+        // تحديث الإحصائيات الحية
+        function updateLiveStats() {
+            document.getElementById('liveReach').textContent = 
+                Math.floor(Math.random() * 1000) + 500;
+            document.getElementById('liveEngagement').textContent = 
+                Math.floor(Math.random() * 100) + 20;
+        }
+
+        // التحديث التلقائي
+        setInterval(updateLiveStats, 5000);
+        setInterval(loadCampaigns, 10000);
+        setInterval(loadPosts, 15000);
+
+        // التحميل الأولي
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCampaigns();
+            loadPosts();
+            updateLiveStats();
+            
+            // تعيين وقت افتراضي للمنشور (بعد ساعة من الآن)
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            document.getElementById('postTime').value = now.toISOString().slice(0, 16);
+        });
+    </script>
+</body>
+</html>
+'''
+
+# Routes للواجهة البرمجية
+@app.route('/')
+def home():
+    return HTML
+
+@app.route('/api/create_campaign', methods=['POST'])
+def create_campaign():
+    data = request.json
+    حملة = النظام_التسويقي.إنشاء_حملة(
+        data['name'],
+        data['platform'],
+        data['budget'],
+        data['audience'],
+        data['content']
+    )
+    return jsonify({'success': True, 'campaign': حملة})
+
+@app.route('/api/schedule_post', methods=['POST'])
+def schedule_post():
+    data = request.json
+    منشور = النظام_التسويقي.جدولة_منشور(
+        data['platform'],
+        data['content'],
+        data['time'],
+        None,
+        data['hashtags'].split('#').filter(tag => tag.trim())
+    )
+    return jsonify({'success': True, 'post': منشور})
+
+@app.route('/api/campaigns')
+def get_campaigns():
+    return jsonify(النظام_التسويقي.الحملات)
+
+@app.route('/api/posts')
+def get_posts():
+    return jsonify(النظام_التسويقي.المنشورات)
+
+@app.route('/api/recommendation')
+def get_recommendation():
+    توصية = المساعد.توليد_توصية()
+    return jsonify({'توصية': توصية})
+
+@app.route('/api/analyze_campaign/<int:campaign_id>')
+def analyze_campaign(campaign_id):
+    تحليل = النظام_التسويقي.تحليل_الأداء(campaign_id)
+    return jsonify(تحليل)
+
+if __name__ == '__main__':
+    print("🚀 النظام التسويقي الذكي يعمل...")
+    print("📱 جاهز لإدارة فيسبوك وإنستغرام...")
+    print("🔗 جاري التشغيل على جميع الأجهزة...")
+    app.run(host='0.0.0.0', port=5000, debug=True)
